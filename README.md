@@ -1,7 +1,7 @@
 # Hidden Markov Models for Human Activity Recognition
 
-**Course**: Formative Assignment 2  
-**Points**: 60/60  
+**Course**: Formative Assignment 2
+
 **Contributors**:
 
 - Erneste Ntezirizaza (Jumping & Still data, Viterbi algorithm)
@@ -13,44 +13,42 @@ This project implements a complete Hidden Markov Model (HMM) pipeline to recogni
 
 ## Key Components
 
-### 1. Data Collection & Preprocessing ✓
+### 1. Data Collection & Preprocessing
 
 - **50 total samples** combining train (~40) and test (~10) recordings
 - **4 activities** with 5-10 second duration recordings
 - **2 sensor types**: Accelerometer (x, y, z) and Gyroscope (x, y, z)
-- **Sliding window approach**: 2-second windows with 50% overlap at ~100 Hz sampling rate
+- **Sliding window approach**: 1-second windows with 50% overlap at ~100 Hz sampling rate
 - **Harmonized sampling rates** across both team members' devices
 
-### 2. Feature Extraction ✓
+### 2. Feature Extraction
 
-- **Time-Domain Features** (14 total):
-  - Mean, Standard Deviation, Variance for each axis
-  - RMS (Root Mean Square) for energy quantification
-  - Signal Magnitude Area (SMA) for activity intensity
-  - Correlation between axes
-- **Frequency-Domain Features** (15 total):
-  - FFT-based dominant frequency detection
-  - Spectral energy computation
-  - Low-frequency band power (0-2 Hz: walking signature)
-  - High-frequency band power (2-10 Hz: jumping signature)
+- **Time/Impact Features**:
+  - 26 features from Accelerometer + 26 from Gyroscope
+  - Includes mean/std/variance/RMS/SMA/correlation and impact-sensitive descriptors (jerk, peak-to-peak, magnitude max/range)
+- **Frequency-Domain Features**:
+  - 15 FFT-based features from Accelerometer + 15 from Gyroscope
+  - Dominant frequency, spectral energy, low/high band power
+- **Total fused features**: **82 features per window**
 
 - **Normalization**: Z-score standardization for scale independence
 
-### 3. HMM Implementation ✓
+### 3. HMM Implementation
 
 - **Viterbi Algorithm** (Erneste): Dynamic programming for optimal sequence decoding
 - **Baum-Welch Algorithm** (Noella): EM-based parameter learning with convergence checking
-- **Gaussian Emission Model**: State-specific feature distributions
+- **Class-specific Gaussian HMMs**: One tuned model per activity (Standing, Walking, Jumping, Still)
+- **Numerically stable training**: Scaled forward/backward recursions and regularized covariance estimates
 - **Learned Parameters**:
-  - Transition probabilities (4×4 matrix)
+  - Transition probabilities (sub-state transition matrices per activity model)
   - Initial state probabilities
   - Emission means and covariances
 
-### 4. Model Evaluation ✓
+### 4. Model Evaluation
 
-- Testing on unseen data (~12 test windows)
+- Testing on unseen data (**162 test windows**)
 - **Per-activity metrics**: Sensitivity, Specificity
-- **Overall Accuracy**: [Results from notebook output]
+- **Overall Accuracy**: **98.77%**
 - **Confusion Matrix**: Visualization of classification patterns
 - **Transition Analysis**: Understanding learned behavior patterns
 
@@ -58,9 +56,18 @@ This project implements a complete Hidden Markov Model (HMM) pipeline to recogni
 
 ```
 Formative-2_Hidden_Markov_Models/
-├── HMM_Activity_Recognition.ipynb    # Main notebook (all code & analysis)
-├── REPORT_WRITING_GUIDE.md           # Detailed report writing instructions
 ├── README.md                         # This file
+├── Notebook/
+│   ├── HMM_Activity_Recognition.ipynb    # Main notebook (all code & analysis)
+│   ├── Figures/
+│   │   ├── raw_sensor_signals.png
+│   │   ├── feature_distributions.png
+│   │   ├── baum_welch_convergence.png
+│   │   ├── confusion_matrix.png
+│   │   ├── transition_probabilities.png
+│   │   └── emission_parameters.png
+│   └── Results/
+│       └── evaluation_metrics.csv
 ├── Dataset/
 │   ├── Train/
 │   │   ├── Accelerometer/
@@ -76,13 +83,6 @@ Formative-2_Hidden_Markov_Models/
 │   │   │   ├── Jumping/        (2 CSV files)
 │   │   │   └── Still/          (3 CSV files)
 │   │   └── Gyroscope/          (10 CSV files)
-│   ├── raw_sensor_signals.png          # Figure 1
-│   ├── feature_distributions.png       # Figure 2
-│   ├── baum_welch_convergence.png      # Figure 3
-│   ├── confusion_matrix.png            # Figure 4
-│   ├── transition_probabilities.png    # Figure 5
-│   ├── emission_parameters.png         # Figure 6
-│   └── evaluation_metrics.csv          # Performance table
 └── Report.pdf                        # Final 4-5 page report
 ```
 
@@ -122,8 +122,8 @@ M-Step:
 
 ### Model Performance
 
-- Successfully learned to distinguish walking and jumping (high energy/frequency variation)
-- Standing and Still most confused (both low-energy stationary states)
+- Near-perfect test performance on all four activities
+- Only minor confusion between Standing and Still (stationary-state overlap)
 - Transition probabilities capture realistic human behavior patterns
 
 ### What Activities Were Easiest to Distinguish?
@@ -137,9 +137,9 @@ M-Step:
 
 ### Impact of Design Choices
 
-- **2-second windows**: Good balance between pattern capture and real-time responsiveness
+- **1-second windows**: Better temporal responsiveness while preserving enough activity signal
 - **Z-score normalization**: Essential for fair feature comparison across scales
-- **Frequency features**: More robust to noise than raw signal variance alone
+- **Impact + frequency features**: Strongly improved Jumping/Walking separation
 - **100 Hz sampling**: Sufficient for capturing activity-specific patterns
 
 ## How to Run the Notebook
@@ -153,7 +153,7 @@ pip install numpy pandas scipy scikit-learn matplotlib seaborn
 ### Execution
 
 ```python
-jupyter notebook HMM_Activity_Recognition.ipynb
+jupyter notebook Notebook/HMM_Activity_Recognition.ipynb
 ```
 
 Then run cells **top-to-bottom**:
@@ -198,23 +198,23 @@ Both contributed to:
 
 ## Evaluation Metrics
 
-See `evaluation_metrics.csv` for detailed per-activity metrics:
+See `Notebook/Results/evaluation_metrics.csv` for detailed per-activity metrics:
 
 ```
 Activity   | # Samples | Sensitivity | Specificity | Accuracy
 -----------|-----------|-------------|-------------|----------
-Standing   | [n]       | [%]         | [%]         | [%]
-Walking    | [n]       | [%]         | [%]         | [%]
-Jumping    | [n]       | [%]         | [%]         | [%]
-Still      | [n]       | [%]         | [%]         | [%]
-Overall    | [n]       | -           | -           | [%]
+Standing   | 47        | 100.00%     | 98.26%      | 98.77%
+Walking    | 32        | 100.00%     | 100.00%     | 98.77%
+Jumping    | 34        | 100.00%     | 100.00%     | 98.77%
+Still      | 49        | 95.92%      | 100.00%     | 98.77%
+Overall    | 162       | -           | -           | 98.77%
 ```
 
 ## Future Improvements
 
 1. **More training data**: 100+ samples per activity (we used minimal ~10/activity)
-2. **Advanced features**: Jerk (acceleration derivative), entropy, wavelet transforms
-3. **Sensor fusion**: Full gyroscope integration + magnetometer for orientation
+2. **Richer features**: Entropy, wavelet transforms, and higher-order spectral descriptors
+3. **Extended fusion**: Add magnetometer and orientation-aware feature alignment
 4. **Person-specific models**: Individual calibration for different body types/movement styles
 5. **Temporal models**: Hidden Semi-Markov Model for explicit state duration modeling
 6. **Deep learning**: LSTM/CNN models for learning temporal patterns automatically
@@ -227,33 +227,3 @@ Overall    | [n]       | -           | -           | [%]
 - **Gaussian Emissions**: Continuous observation modeling common in activity recognition
 - **Feature Engineering**: Based on standard accelerometer signal processing in literature
 - **Convergence Checking**: Epsilon-based method more robust than fixed iteration limits
-
-## Report Rubric Alignment
-
-| Criterion                | Points | ✓ Implementation                                               |
-| ------------------------ | ------ | -------------------------------------------------------------- |
-| Data Quality             | 10     | 50 samples, 4 activities, clean CSVs, visualizations           |
-| Feature Extraction       | 10     | 29 features (14 time + 15 freq), Z-score normalized, justified |
-| Algorithm Implementation | 15     | Viterbi ✓, Baum-Welch ✓, convergence checks ✓, modular code    |
-| Evaluation               | 10     | Unseen data, sensitivity/specificity, confusion matrix         |
-| Collaboration            | 10     | 50/50 commits, task allocation table, clear Github history     |
-| Report Quality           | 5      | 4-5 pages, proper structure, figures, professional format      |
-| **TOTAL**                | **60** |                                                                |
-
-## Getting Full Marks (60/60)
-
-✓ All code runs without errors  
-✓ All 29 features correctly extracted and normalized  
-✓ Viterbi algorithm functional with correct backtracking  
-✓ Baum-Welch converges on training data  
-✓ Test evaluation metrics clearly reported  
-✓ Visualizations match notebook outputs  
-✓ Report follows structure exactly  
-✓ Both members have balanced contributions  
-✓ All figures have captions and reference numbers  
-✓ Professional formatting and zero typos
-
----
-
-**Last Updated**: March 7, 2026  
-**Status**: Complete - Ready for Submission
