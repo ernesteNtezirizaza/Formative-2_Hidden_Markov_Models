@@ -57,6 +57,9 @@ This project implements a complete Hidden Markov Model (HMM) pipeline to recogni
 ```
 Formative-2_Hidden_Markov_Models/
 ├── README.md                         # This file
+├── Formative-2_HMM_Report_Final.pdf  # Final HMM report document
+├── Team Task Sheet_[Machine_Learning_Techniques_II_Hidden Markov Models_Cohort 1_Team10].pdf
+│                                     # Team task allocation sheet
 ├── Notebook/
 │   ├── HMM_Activity_Recognition.ipynb    # Main notebook (all code & analysis)
 │   ├── Figures/
@@ -83,7 +86,7 @@ Formative-2_Hidden_Markov_Models/
 │   │   │   ├── Jumping/        (2 CSV files)
 │   │   │   └── Still/          (3 CSV files)
 │   │   └── Gyroscope/          (10 CSV files)
-└── Report.pdf                        # Final 4-5 page report
+└── .git/                             # Git metadata
 ```
 
 ## Algorithm Summary
